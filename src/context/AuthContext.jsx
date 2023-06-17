@@ -1,19 +1,18 @@
 import {createContext, useContext,useEffect,useState } from 'react';
 import {
     createUserWithEmailAndPassword,
+    updateProfile,
     signInWithEmailAndPassword,
     signOut, 
     onAuthStateChanged,
-    updateProfile,
-    sendPasswordResetEmail} from 'firebase/auth';
-import {auth} from '../firebase'
+    sendPasswordResetEmail, 
+    fetchSignInMethodsForEmail} from 'firebase/auth';
+import {auth} from '../firebase';
 
 export const UserContext = createContext({});
-
 export const UserAuth = ()=> {
     return useContext(UserContext);
 };
-
 
 export const AuthContextProvider = ({children}) => {
   const [user,setUser] = useState(null);
@@ -29,23 +28,12 @@ export const AuthContextProvider = ({children}) => {
         setUser(null);
       }
       setError("");
-      setLoading(false);
+      setLoading(false);  
     });
     return unsubscribe;
   }, []);
-/*
-    useEffect(()=>{
-        const unsubscribe=onAuthStateChanged(auth, (currentUser)=> {
-            console.log(currentUser);
-            setUser(currentUser);
-        });
-        return ()=> {
-            unsubscribe();
-        };
-    },[]);
-*/
+
   const createUser = (email,password,name) => {
-    //return createUserWithEmailAndPassword (auth, email, password)
     setLoading(true);
     createUserWithEmailAndPassword(auth, email, password)
       .then(() =>
@@ -54,28 +42,55 @@ export const AuthContextProvider = ({children}) => {
         })
       )
       .then((res) => console.log(res))
-      .catch((err) => setError(err.message))
+      .catch(function (error) {
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        if (errorCode === 'auth/weak-password') {
+          alert('The password is too weak.');
+        } else if ( errorCode === 'auth/email-already-in-use' ) {
+          alert('The email is available. Please choose another email or Sign in.');
+        } else {
+          alert(errorMessage);
+        }
+        console.log(error);
+      })
       .finally(() => setLoading(false));
-       
-};
+  };
 
-const signIn=(email,password)=> {
-    //return signInWithEmailAndPassword(auth,email,password);
-    setLoading(true);
-    signInWithEmailAndPassword(auth, email, password)
-      .then((res) => console.log(res))
-      .catch((err) => setError(err.code))
-      .finally(() => setLoading(false));
+
+const signIn = (email,password)=>{
+signInWithEmailAndPassword(auth,email, password).catch(function(error) {
+  var errorCode = error.code;
+  var errorMessage = error.message;
+  if ( errorCode === 'auth/user-not-found' ) {
+          if ( errorCode == 'auth/user-not-found' ) {
+              alert('Please provide a valid email.');
+          } else if ( errorCode == 'auth/invalid-email' ) {
+              alert('Please provide a valid email');
+          } else {
+              alert(errorMessage);
+          }
+          console.log(error);
+  } else if ( errorCode === 'auth/wrong-password' ) {
+      fetchSignInMethodsForEmail(auth,email).then(function( result ){
+      });
+      alert('Wrong password. Please try again');
+    } else if ( errorCode == 'auth/too-many-requests' ) {
+      alert('The account had temporarily disabled. You can immediately restore it by resetting your password or you can try again later.');
+    } else {
+      alert( errorMessage );
+  }
+  console.log( error );
+});
 }
+
+const forgotPassword=(email) =>{
+  return sendPasswordResetEmail(auth,email);
+};
 
 const logout = ()=> {
     signOut(auth);
 }
-
-const forgotPassword=(email) =>{
-    return sendPasswordResetEmail(auth,email);
-};
-    
 
 const contextValue = {
     user,
