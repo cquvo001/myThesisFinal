@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/myThesisFinal/static/css/main.c65ea561.css",
+    "main.js": "/myThesisFinal/static/js/main.51e93e80.js",
+    "index.html": "/myThesisFinal/index.html",
+    "main.c65ea561.css.map": "/myThesisFinal/static/css/main.c65ea561.css.map",
+    "main.51e93e80.js.map": "/myThesisFinal/static/js/main.51e93e80.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c65ea561.css",
+    "static/js/main.51e93e80.js"
+  ]
+}
